@@ -7,5 +7,4 @@ object dependencies {
     val slf4: String = "1.7.26"
     val conf: String = "1.4.0"
   }
-
 }
