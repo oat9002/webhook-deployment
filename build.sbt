@@ -1,8 +1,9 @@
 import dependencies.versions._
 
 name := "webhook-deployment"
+maintainer := "oat9002"
 
-version := "0.1"
+version := "1.0"
 
 scalaVersion := "2.13.4"
 
@@ -14,3 +15,6 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-nop" % slf4,
   "com.typesafe" % "config" % conf,
 )
+
+enablePlugins(JavaServerAppPackaging)
+

@@ -5,6 +5,7 @@ import common.DockerUtil
 import models.DockerWebhook
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.io.Source
 import sys.process._
 
 trait GoldPriceTrackingService {
@@ -19,10 +20,10 @@ class GoldPriceTrackingServiceImpl(dockerUtil: DockerUtil)(implicit ctx: Executi
     }
 
     isValid.map(if (_) {
-      val execFilePath = getClass.getResource("/gold-price-tracking-server.sh").getPath
-      val result = execFilePath.!
+      val execCommands = Source.fromResource("gold-price-tracking-server-deploy.sh").getLines().toList
+      val result = execCommands.slice(1, execCommands.length).map(cmd => cmd.!)
 
-      result == 0
+      !result.contains(1)
     } else false)
   }
 }
