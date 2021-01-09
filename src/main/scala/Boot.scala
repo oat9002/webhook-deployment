@@ -1,10 +1,11 @@
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
-import akka.http.scaladsl.server.Directives.{complete, concat, get, getFromResource, getFromResourceDirectory, path, pathPrefix, pathSingleSlash}
+import akka.http.scaladsl.server.Directives.{complete, concat, get, getFromResource, getFromResourceDirectory, path, pathPrefix, pathSingleSlash, withRequestTimeout}
 import controllers.WebHookRoute
 
 import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.duration.DurationInt
 
 object Boot extends App {
   implicit val system: ActorSystem = ActorSystem()
@@ -21,7 +22,9 @@ object Boot extends App {
               "Say hello to akka-http"))
         }
       },
-      pathPrefix("webhook")(webHookRoute.routes)
+      pathPrefix("webhook") {
+        withRequestTimeout(10.minutes)(webHookRoute.routes)
+      }
     )
 
   val combineRoutes = route

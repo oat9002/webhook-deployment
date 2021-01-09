@@ -20,10 +20,10 @@ class GoldPriceTrackingServiceImpl(dockerUtil: DockerUtil)(implicit ctx: Executi
     }
 
     isValid.map(if (_) {
-      val execCommands = Source.fromResource("gold-price-tracking-server-deploy.sh").getLines().toList
-      val result = execCommands.slice(1, execCommands.length).map(cmd => cmd.!)
+      val filePath = getClass.getClassLoader.getResource("gold-price-tracking-server-deploy.sh").getPath
+      val result = s"/bin/bash $filePath".!
 
-      !result.contains(1)
+      result == 0
     } else false)
   }
 }
