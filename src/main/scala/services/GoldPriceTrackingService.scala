@@ -1,7 +1,7 @@
 package services
 
 import akka.actor.ActorSystem
-import common.DockerUtil
+import common.{Commands, DockerUtil}
 import models.DockerWebhook
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -16,10 +16,9 @@ class GoldPriceTrackingServiceImpl(dockerUtil: DockerUtil)(implicit ctx: Executi
   def deploy(dockerWebHook: Option[DockerWebhook]): Future[Boolean] = {
     dockerWebHook match {
       case Some(d) =>
-        val filePath = getClass.getClassLoader.getResource("gold-price-tracking-server-deploy.sh").getPath
-        val result = s"/bin/bash $filePath".!
+        val result = Commands.goldPriceTrackingDeploy.map(_.!).exists(_ != 0)
 
-        if (result == 0) {
+        if (result) {
           dockerUtil.callback(d)
         } else {
           Future.successful(false)
