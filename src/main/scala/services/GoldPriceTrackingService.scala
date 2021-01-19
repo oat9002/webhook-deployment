@@ -14,17 +14,18 @@ trait GoldPriceTrackingService {
 
 class GoldPriceTrackingServiceImpl(dockerUtil: DockerUtil)(implicit ctx: ExecutionContext, system: ActorSystem) extends GoldPriceTrackingService {
   def deploy(dockerWebHook: Option[DockerWebhook]): Future[Boolean] = {
-    val isValid = dockerWebHook match {
-      case Some(x) => dockerUtil.validateRequest(x)
-      case _ => Future(false)
+    dockerWebHook match {
+      case Some(d) =>
+        val filePath = getClass.getClassLoader.getResource("gold-price-tracking-server-deploy.sh").getPath
+        val result = s"/bin/bash $filePath".!
+
+        if (result == 0) {
+          dockerUtil.callback(d)
+        } else {
+          Future.successful(false)
+        }
+      case _ => Future.successful(false)
     }
-
-    isValid.map(if (_) {
-      val filePath = getClass.getClassLoader.getResource("gold-price-tracking-server-deploy.sh").getPath
-      val result = s"/bin/bash $filePath".!
-
-      result == 0
-    } else false)
   }
 }
 
