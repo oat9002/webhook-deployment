@@ -1,7 +1,7 @@
 package controllers
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCode}
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCode, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directives, Route}
 import common.DockerUtil
@@ -34,9 +34,9 @@ class WebHookRoute(implicit ctx: ExecutionContext, actorSystem: ActorSystem) ext
                     entity(as[Option[DockerWebhook]]) { dockerWebHook =>
                       val result = goldPricetrackingService.deploy(dockerWebHook)
                       onComplete(result) {
-                        case Success(true) => complete(StatusCode.int2StatusCode(200))
-                        case Success(false) => complete(StatusCode.int2StatusCode(400))
-                        case Failure(x) => complete(StatusCode.int2StatusCode(500), x.getMessage)
+                        case Success(true) => complete(StatusCodes.OK)
+                        case Success(false) => complete(StatusCodes.BadRequest)
+                        case Failure(x) => complete(StatusCodes.InternalServerError, x.getMessage)
                       }
                     }
                   }
