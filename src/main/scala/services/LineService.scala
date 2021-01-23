@@ -2,11 +2,9 @@ package services
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.model.{HttpHeader, HttpMethods, HttpRequest, HttpResponse, RequestEntity, StatusCodes, headers}
+import akka.http.scaladsl.model.{FormData, HttpHeader, HttpMethods, HttpRequest, HttpResponse, StatusCodes}
 import common.Configuration
-import models.requests.{LineNotifyRequest, LineNotifyRequestJsonProtocol}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -15,26 +13,24 @@ trait LineService {
   def prefixClassName[T](c: Class[T])(text: String): String
 }
 
-class LineServiceImpl(implicit ctx: ExecutionContext, system: ActorSystem) extends LineService with LineNotifyRequestJsonProtocol {
+class LineServiceImpl(implicit ctx: ExecutionContext, system: ActorSystem) extends LineService {
   override def notify(message: String): Future[Boolean] = {
-    val response = for {
-      reqEntity <- Marshal(LineNotifyRequest(message)).to[RequestEntity]
-      res <- Http().singleRequest(HttpRequest(
+    val response = Http().singleRequest(HttpRequest(
         uri = Configuration.lineConfig.url,
         method = HttpMethods.POST,
-        entity = reqEntity,
+        entity = FormData(Map("message" -> message)).toEntity,
         headers = Seq[HttpHeader](RawHeader("Authorization", s"Bearer ${Configuration.lineConfig.lineNotifyToken}"))
       ))
-    } yield res
 
-    response.map {
-      case HttpResponse(StatusCodes.OK, _, _, _) => true
-      case _ => false
+
+    response.flatMap {
+      case HttpResponse(StatusCodes.OK, _, entity, _) => entity.discardBytes().future().map(_ => true)
+      case _ => Future.successful(false)
     }
   }
 
   override def prefixClassName[T](c: Class[T])(text: String): String = {
-    s"[${c.getName}]: $text"
+    s"[${c.getSimpleName}]: $text"
   }
 }
 
