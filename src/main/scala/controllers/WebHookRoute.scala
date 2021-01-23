@@ -6,15 +6,16 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directives, Route}
 import common.DockerUtil
 import models.{DockerWebhook, DockerWebhookJsonProtocol}
-import services.GoldPriceTrackingService
+import services.{GoldPriceTrackingService, LineService}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 class WebHookRoute(implicit ctx: ExecutionContext, actorSystem: ActorSystem) extends DockerWebhookJsonProtocol {
   val routes: Route = root ~ deploy
-  val dockerUtil: DockerUtil = DockerUtil()
-  val goldPricetrackingService: GoldPriceTrackingService = GoldPriceTrackingService(dockerUtil)
+  val dockerUtil: DockerUtil = DockerUtil(ctx, actorSystem)
+  val lineService: LineService = LineService(ctx, actorSystem)
+  val goldPricetrackingService: GoldPriceTrackingService = GoldPriceTrackingService(dockerUtil, lineService)
 
   def root: Route = pathEndOrSingleSlash {
     Directives.get {

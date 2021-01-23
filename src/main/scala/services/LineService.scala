@@ -12,6 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait LineService {
   def notify(message: String): Future[Boolean]
+  def prefixClassName[T](c: Class[T])(text: String): String
 }
 
 class LineServiceImpl(implicit ctx: ExecutionContext, system: ActorSystem) extends LineService with LineNotifyRequestJsonProtocol {
@@ -30,6 +31,10 @@ class LineServiceImpl(implicit ctx: ExecutionContext, system: ActorSystem) exten
       case HttpResponse(StatusCodes.OK, _, _, _) => true
       case _ => false
     }
+  }
+
+  override def prefixClassName[T](c: Class[T])(text: String): String = {
+    s"[${c.getName}]: $text"
   }
 }
 
