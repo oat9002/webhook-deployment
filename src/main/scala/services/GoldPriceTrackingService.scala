@@ -23,7 +23,8 @@ class GoldPriceTrackingServiceImpl(dockerUtil: DockerUtil, lineService: LineServ
         val result = Commands.goldPriceTrackingDeploy.map(_.!).exists(_ != 0)
 
         if (result) {
-          dockerUtil.callback(d)
+          Future.successful(true)
+          //dockerUtil.callback(d)
         } else {
           Future.successful(false)
         }
