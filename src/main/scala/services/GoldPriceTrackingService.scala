@@ -20,13 +20,13 @@ class GoldPriceTrackingServiceImpl(dockerUtil: DockerUtil, lineService: LineServ
 
     val result = dockerWebHook match {
       case Some(d) =>
-        val result = Commands.goldPriceTrackingDeploy.map(_.!).exists(_ != 0)
+        val isError = Commands.goldPriceTrackingDeploy.map(_.!).exists(_ != 0)
 
-        if (result) {
-          Future.successful(true)
+        if (isError) {
+          Future.successful(false)
           //dockerUtil.callback(d)
         } else {
-          Future.successful(false)
+          Future.successful(true)
         }
       case _ => Future.successful(false)
     }
