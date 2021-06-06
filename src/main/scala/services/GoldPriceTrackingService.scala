@@ -5,7 +5,6 @@ import common.{Commands, DockerUtil}
 import models.DockerWebhook
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.io.Source
 import scala.util.Success
 import sys.process._
 
