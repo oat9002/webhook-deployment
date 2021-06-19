@@ -48,7 +48,7 @@ class WebHookRoute(implicit ctx: ExecutionContext, actorSystem: ActorSystem) ext
             path("cryptonotify") {
               concat(
                 pathEndOrSingleSlash {
-                  Directives.post {
+                  Directives.get {
                     if (cryptoNotifyService.deploy()) {
                       complete(StatusCodes.OK)
                     } else {
