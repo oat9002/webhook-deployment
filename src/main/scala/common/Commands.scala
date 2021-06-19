@@ -10,6 +10,6 @@ object Commands {
     "docker stop crypto-notify_crypto-notify_1",
     "docker rm crypto-notify_crypto-notify_1",
     "docker image rm oat9002/crypto-notify",
-    "docker-compose -f /root/opt/dev/crypto-notify/docker-compose.yml up -d"
+    "docker-compose -f /opt/dev/crypto-notify/docker-compose.yml up -d"
   )
 }
