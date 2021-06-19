@@ -3,7 +3,7 @@ import dependencies.versions._
 name := "webhook-deployment"
 maintainer := "oat9002"
 
-version := "1.2.0"
+version := "1.3.0"
 
 scalaVersion := "2.13.4"
 
