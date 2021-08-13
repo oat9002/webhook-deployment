@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directives, Route}
 import common.DockerUtil
 import models.{DockerWebhook, DockerWebhookJsonProtocol}
-import services.{GoldPriceTrackingService, LineService}
+import services.{CryptoNotifyService, GoldPriceTrackingService, LineService}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -16,6 +16,7 @@ class WebHookRoute(implicit ctx: ExecutionContext, actorSystem: ActorSystem) ext
   val dockerUtil: DockerUtil = DockerUtil(ctx, actorSystem)
   val lineService: LineService = LineService(ctx, actorSystem)
   val goldPricetrackingService: GoldPriceTrackingService = GoldPriceTrackingService(dockerUtil, lineService)
+  val cryptoNotifyService: CryptoNotifyService = CryptoNotifyService(lineService)
 
   def root: Route = pathEndOrSingleSlash {
     Directives.get {
@@ -39,6 +40,19 @@ class WebHookRoute(implicit ctx: ExecutionContext, actorSystem: ActorSystem) ext
                         case Success(false) => complete(StatusCodes.BadRequest)
                         case Failure(x) => complete(StatusCodes.InternalServerError, x.getMessage)
                       }
+                    }
+                  }
+                }
+              )
+            },
+            path("cryptonotify") {
+              concat(
+                pathEndOrSingleSlash {
+                  Directives.get {
+                    if (cryptoNotifyService.deploy()) {
+                      complete(StatusCodes.OK)
+                    } else {
+                      complete(StatusCodes.InternalServerError)
                     }
                   }
                 }
