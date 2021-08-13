@@ -2,7 +2,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives.{complete, concat, get, getFromResource, getFromResourceDirectory, path, pathPrefix, pathSingleSlash, withRequestTimeout}
-import controllers.WebHookRoute
+import controllers.{AuthenticationRoute, WebHookRoute}
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.DurationInt
@@ -11,7 +11,7 @@ object Boot extends App {
   implicit val system: ActorSystem = ActorSystem()
   // needed for the future flatMap/onComplete in the end
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
-  val webHookRoute = WebHookRoute.apply
+  val webHookRoute = WebHookRoute(executionContext, system)
 
   val route =
     concat(
@@ -27,9 +27,8 @@ object Boot extends App {
       }
     )
 
-  val combineRoutes = route
   val bindingFuture =
-    Http().newServerAt("localhost", 8080).bind(combineRoutes)
+    Http().newServerAt("localhost", 8080).bind(route)
 
   println(s"Server online at http://localhost:8080/")
 }
