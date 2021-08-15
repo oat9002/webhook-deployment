@@ -23,4 +23,4 @@ project/target/
 .scala_dependencies
 .worksheet
 
-application.conf
+application.local.conf

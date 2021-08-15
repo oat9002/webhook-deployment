@@ -2,6 +2,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives.{complete, concat, get, getFromResource, getFromResourceDirectory, path, pathPrefix, pathSingleSlash, withRequestTimeout}
+import common.Configuration
 import controllers.{AuthenticationRoute, WebHookRoute}
 
 import scala.concurrent.ExecutionContextExecutor
@@ -28,7 +29,7 @@ object Boot extends App {
     )
 
   val bindingFuture =
-    Http().newServerAt("localhost", 8080).bind(route)
+    Http().newServerAt("localhost", Configuration.appConfig.port).bind(route)
 
-  println(s"Server online at http://localhost:8080/")
+  println(s"Server online at http://localhost:${Configuration.appConfig.port}/")
 }
