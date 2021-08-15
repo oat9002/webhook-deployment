@@ -1,4 +1,5 @@
 import dependencies.versions._
+import sbtrelease.ReleaseStateTransformations.{checkSnapshotDependencies, commitNextVersion, commitReleaseVersion, inquireVersions, pushChanges, runClean, runTest, setNextVersion, setReleaseVersion, tagRelease}
 
 name := "webhook-deployment"
 maintainer := "oat9002"
@@ -17,6 +18,18 @@ libraryDependencies ++= Seq(
 enablePlugins(JavaServerAppPackaging)
 
 releaseVersionBump := sbtrelease.Version.Bump.Minor
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,              // : ReleaseStep
+  inquireVersions,                        // : ReleaseStep
+  runClean,                               // : ReleaseStep
+  runTest,                                // : ReleaseStep
+  setReleaseVersion,                      // : ReleaseStep
+  commitReleaseVersion,                   // : ReleaseStep, performs the initial git checks
+  tagRelease,                             // : ReleaseStep
+  setNextVersion,                         // : ReleaseStep
+  commitNextVersion,                      // : ReleaseStep
+  pushChanges                             // : ReleaseStep, also checks that an upstream branch is properly configured
+)
 releaseUseGlobalVersion := false
 releaseIgnoreUntrackedFiles := true
 
