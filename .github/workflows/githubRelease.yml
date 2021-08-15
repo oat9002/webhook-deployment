@@ -22,6 +22,10 @@ jobs:
           distribution: 'adopt'
       - name: Create package
         run: sbt "universal:packageBin"
+        env:
+          WEBHOOK_DEPLOYMENT_API_KEY: ${{ secrets.WEBHOOK_DEPLOYMENT_API_KEY }}
+          WEBHOOK_DEPLOYMENT_LINE_NOTIFY_TOKEN: ${{ secrets.WEBHOOK_DEPLOYMENT_LINE_NOTIFY_TOKEN }}
+          WEBHOOK_DEPLOYMENT_LINE_NOTIFY_URL: ${{ secrets.WEBHOOK_DEPLOYMENT_LINE_NOTIFY_URL }}
       - name: Publish GitHub Release
         uses: ncipollo/release-action@v1
         with:
