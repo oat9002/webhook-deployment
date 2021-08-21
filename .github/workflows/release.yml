@@ -56,3 +56,4 @@ jobs:
         with:
           artifacts: "target/universal/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
