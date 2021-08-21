@@ -34,7 +34,9 @@ jobs:
           git config --global user.name 'oat9002'
           git config --global user.email 'oat9002@hotmail.com'
       - name: Get latest tag
-        run: echo ::set-output name=LATEST_TAG::$(git describe --tags --abbrev=0)
+        run: |
+          git pull
+          echo ::set-output name=LATEST_TAG::$(git describe --tags --abbrev=0)
         id: get-latest-tag
       - name: Checkout to latest tag
         run: git checkout tags/${{ steps.get-latest-tag.outputs.LATEST_TAG }}
