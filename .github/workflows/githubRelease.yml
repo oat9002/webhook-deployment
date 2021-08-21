@@ -1,8 +1,6 @@
 name: githubRelease
 
-on:
-  push:
-    tags: ["v*"]
+on: workflow_dispatch
 
 jobs:
   githubRelease:
