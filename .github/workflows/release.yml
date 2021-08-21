@@ -24,6 +24,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   githubRelease:
+    needs: release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
