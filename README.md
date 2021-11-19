@@ -1,2 +1,2 @@
 # webhook-deployment
-REST API fro webhook deployment
+REST API for webhook deployment
