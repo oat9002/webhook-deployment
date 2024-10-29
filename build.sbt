@@ -1,4 +1,4 @@
-import dependencies.versions._
+import Dependency.*
 import sbtrelease.ReleaseStateTransformations.{checkSnapshotDependencies, commitNextVersion, commitReleaseVersion, inquireVersions, pushChanges, runClean, runTest, setNextVersion, setReleaseVersion, tagRelease}
 
 name := "webhook-deployment"
