@@ -1,18 +1,14 @@
 package services
 
-import akka.actor.ActorSystem
-import common.{Commands, DockerUtil}
-import models.DockerWebhook
+import common.Commands
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Success
-import sys.process._
+import scala.sys.process._
 
 trait GoldPriceTrackingService {
   def deploy(): Boolean
 }
 
-class GoldPriceTrackingServiceImpl(lineService: LineService)(implicit ctx: ExecutionContext, system: ActorSystem) extends GoldPriceTrackingService {
+class GoldPriceTrackingServiceImpl(lineService: LineService) extends GoldPriceTrackingService {
   val lineMessage: String => String = lineService.prefixClassName(classOf[GoldPriceTrackingService])
 
   def deploy(): Boolean = {
@@ -31,5 +27,5 @@ class GoldPriceTrackingServiceImpl(lineService: LineService)(implicit ctx: Execu
 }
 
 object GoldPriceTrackingService {
-  def apply(lineService: LineService)(implicit ctx: ExecutionContext, system: ActorSystem): GoldPriceTrackingService = new GoldPriceTrackingServiceImpl(lineService)
+  def apply(lineService: LineService): GoldPriceTrackingService = new GoldPriceTrackingServiceImpl(lineService)
 }

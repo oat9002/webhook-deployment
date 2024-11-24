@@ -44,5 +44,5 @@ class LineServiceImpl extends LineService {
 }
 
 object LineService {
-  def apply(implicit ctx: ExecutionContext, system: ActorSystem): LineService = new LineServiceImpl()
+  def apply(): LineService = new LineServiceImpl()
 }
