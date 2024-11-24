@@ -1,10 +1,15 @@
 package services
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.model.{FormData, HttpHeader, HttpMethods, HttpRequest, HttpResponse, StatusCodes}
-import common.Configuration
+import akka.http.scaladsl.model.FormData
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
+import common.{Configuration, HttpClient}
+import io.circe.generic.codec.DerivedAsObjectCodec.deriveCodec
+import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
+import org.http4s.headers.Authorization
+import org.http4s.implicits.http4sLiteralsSyntax
+import org.http4s.{Headers, Request}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -13,20 +18,24 @@ trait LineService {
   def prefixClassName[T](c: Class[T])(text: String): String
 }
 
-class LineServiceImpl(implicit ctx: ExecutionContext, system: ActorSystem) extends LineService {
+class LineServiceImpl extends LineService {
   override def notify(message: String): Future[Boolean] = {
-    val response = Http().singleRequest(HttpRequest(
-        uri = Configuration.lineConfig.url,
-        method = HttpMethods.POST,
-        entity = FormData(Map("message" -> message)).toEntity,
-        headers = Seq[HttpHeader](RawHeader("Authorization", s"Bearer ${Configuration.lineConfig.lineNotifyToken}"))
-      ))
 
+    val response = HttpClient.get.use { client =>
+      val request = Request[IO](
+        uri = uri"${Configuration.lineConfig.url}",
+        method = org.http4s.Method.POST,
+        headers = Headers(Authorization.parse(s" ${Configuration.lineConfig.lineNotifyToken}"))
+      )
+        .withEntity(FormData("message" -> message).toEntity)
 
-    response.flatMap {
-      case HttpResponse(StatusCodes.OK, _, entity, _) => entity.discardBytes().future().map(_ => true)
-      case _ => Future.successful(false)
+      client.expect[String](request).attempt.map {
+        case Right(_) => true
+        case Left(_) => false
+      }
     }
+
+    response.unsafeToFuture()
   }
 
   override def prefixClassName[T](c: Class[T])(text: String): String = {
