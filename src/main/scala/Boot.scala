@@ -1,7 +1,8 @@
 import cats.effect._
-import cats.effect.unsafe.implicits.global
+import cats.implicits.toSemigroupKOps
 import com.comcast.ip4s.{IpLiteralSyntax, Port}
 import common.Configuration
+import controllers.{AuthenticationMiddleware, WebHookRoute}
 import org.http4s._
 import org.http4s.dsl.io._
 import org.http4s.ember.server.EmberServerBuilder
@@ -27,8 +28,10 @@ object Boot extends IOApp {
       Ok("Hello world!")
   }
 
-  private val route = helloRoute
-  private val httpApp = Router("/" -> route).orNotFound
+  private val webHookRoute = WebHookRoute().route
+
+  private val route = helloRoute <+> webHookRoute
+  private val httpApp = Router("/" -> route ).orNotFound
   private val port = Port.fromInt(Configuration.appConfig.port).getOrElse(port"8080")
 
   override def run(args: List[String]): IO[ExitCode] = {

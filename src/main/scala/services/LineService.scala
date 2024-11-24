@@ -1,6 +1,5 @@
 package services
 
-import akka.actor.ActorSystem
 import akka.http.scaladsl.model.FormData
 import cats.effect.IO
 import cats.effect.unsafe.implicits.global
@@ -8,8 +7,7 @@ import common.{Configuration, HttpClient}
 import io.circe.generic.codec.DerivedAsObjectCodec.deriveCodec
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.headers.Authorization
-import org.http4s.implicits.http4sLiteralsSyntax
-import org.http4s.{Headers, Request}
+import org.http4s.{Headers, Request, Uri}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -23,11 +21,14 @@ class LineServiceImpl extends LineService {
 
     val response = HttpClient.get.use { client =>
       val request = Request[IO](
-        uri = uri"${Configuration.lineConfig.url}",
+        uri = Uri.fromString(s"${Configuration.lineConfig.url}") match {
+          case Right(uri) => uri
+          case _ => throw new Exception("Invalid URL")
+        },
         method = org.http4s.Method.POST,
         headers = Headers(Authorization.parse(s" ${Configuration.lineConfig.lineNotifyToken}"))
       )
-        .withEntity(FormData("message" -> message).toEntity)
+        .withEntity(FormData("message" -> message))
 
       client.expect[String](request).attempt.map {
         case Right(_) => true
