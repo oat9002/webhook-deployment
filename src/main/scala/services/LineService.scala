@@ -1,23 +1,19 @@
 package services
 
-import akka.http.scaladsl.model.FormData
 import cats.effect.IO
-import cats.effect.unsafe.implicits.global
 import common.{Configuration, HttpClient}
 import io.circe.generic.codec.DerivedAsObjectCodec.deriveCodec
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
-import org.http4s.headers.Authorization
-import org.http4s.{Headers, Request, Uri}
-
-import scala.concurrent.{ExecutionContext, Future}
+import org.http4s.headers.{Authorization, `Content-Type`}
+import org.http4s.{Headers, MediaType, Request, Uri, UrlForm}
 
 trait LineService {
-  def notify(message: String): Future[Boolean]
+  def notify(message: String): IO[Boolean]
   def prefixClassName[T](c: Class[T])(text: String): String
 }
 
 class LineServiceImpl extends LineService {
-  override def notify(message: String): Future[Boolean] = {
+  override def notify(message: String): IO[Boolean] = {
 
     val response = HttpClient.get.use { client =>
       val request = Request[IO](
@@ -26,9 +22,9 @@ class LineServiceImpl extends LineService {
           case _ => throw new Exception("Invalid URL")
         },
         method = org.http4s.Method.POST,
-        headers = Headers(Authorization.parse(s" ${Configuration.lineConfig.lineNotifyToken}"))
+        headers = Headers(Authorization.parse(s" ${Configuration.lineConfig.lineNotifyToken}"), `Content-Type`(MediaType.application.`x-www-form-urlencoded`))
       )
-        .withEntity(FormData("message" -> message))
+        .withEntity(UrlForm("message" -> message))
 
       client.expect[String](request).attempt.map {
         case Right(_) => true
@@ -36,7 +32,7 @@ class LineServiceImpl extends LineService {
       }
     }
 
-    response.unsafeToFuture()
+    response
   }
 
   override def prefixClassName[T](c: Class[T])(text: String): String = {

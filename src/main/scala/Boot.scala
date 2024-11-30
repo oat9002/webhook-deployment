@@ -10,19 +10,6 @@ import org.http4s.implicits._
 import org.http4s.server.Router
 
 object Boot extends IOApp {
-//  val route =
-//    concat(
-//      pathSingleSlash {
-//        get {
-//          complete(
-//            HttpEntity(ContentTypes.`application/json`,
-//              "Say hello to akka-http"))
-//        }
-//      },
-//      pathPrefix("webhook") {
-//        withRequestTimeout(10.minutes)(webHookRoute.routes)
-//      }
-//    )
   private val helloRoute = HttpRoutes.of[IO] {
     case GET -> Root =>
       Ok("Hello world!")

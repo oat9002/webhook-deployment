@@ -7,9 +7,6 @@ maintainer := "oat9002"
 scalaVersion := "2.13.15"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-http" % akkaHttp,
-  "com.typesafe.akka" %% "akka-stream" % akkaStream,
-  "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpSprayJson,
   "org.http4s" %% "http4s-ember-client" % http4s,
   "org.http4s" %% "http4s-ember-server" % http4s,
   "org.http4s" %% "http4s-dsl"          % http4s,
