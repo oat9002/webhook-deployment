@@ -24,17 +24,17 @@ class WebHookRoute {
     case GET -> Root /  "goldpricetracking" as isAuthed => {
       if (!isAuthed) {
         Forbidden("Unauthorized!")
-      }
-      else if (goldPriceTrackingService.deploy()) {
-        Ok("Deployment is complete")
       } else {
-        InternalServerError("Deployment is failed")
+        goldPriceTrackingService.deploy().flatMap {
+          case true => Ok("Deployment is complete")
+          case _ => InternalServerError("Deployment is failed")
+        }
       }
     }
   }
 
   val route: HttpRoutes[IO] = Router(
-    "/" -> (root <+> RequestTimeoutMiddleware.apply(10.minutes)(AuthenticationMiddleware.apply(deploy)))
+    "/deploy" -> (root <+> RequestTimeoutMiddleware.apply(10.minutes)(AuthenticationMiddleware.apply(deploy)))
   )
 }
 

@@ -22,7 +22,7 @@ class LineServiceImpl extends LineService {
           case _ => throw new Exception("Invalid URL")
         },
         method = org.http4s.Method.POST,
-        headers = Headers(Authorization.parse(s" ${Configuration.lineConfig.lineNotifyToken}"), `Content-Type`(MediaType.application.`x-www-form-urlencoded`))
+        headers = Headers(Authorization.parse(s"Bearer ${Configuration.lineConfig.lineNotifyToken}"), `Content-Type`(MediaType.application.`x-www-form-urlencoded`))
       )
         .withEntity(UrlForm("message" -> message))
 

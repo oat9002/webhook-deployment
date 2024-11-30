@@ -1,28 +1,31 @@
 package services
 
+import cats.effect.IO
 import common.Commands
 
 import scala.sys.process._
 
 trait GoldPriceTrackingService {
-  def deploy(): Boolean
+  def deploy(): IO[Boolean]
 }
 
 class GoldPriceTrackingServiceImpl(lineService: LineService) extends GoldPriceTrackingService {
   val lineMessage: String => String = lineService.prefixClassName(classOf[GoldPriceTrackingService])
 
-  def deploy(): Boolean = {
-    lineService.notify(lineMessage("Start Deployment"))
+  def deploy(): IO[Boolean] = {
+    lineService.notify(lineMessage("Start Deployment")).flatMap { result => {
+      if (result) {
+        val isError = Commands.goldPriceTrackingDeploy.map(_.!).exists(_ != 0)
 
-    val isError = Commands.goldPriceTrackingDeploy.map(_.!).exists(_ != 0)
-
-    if (isError) {
-      lineService.notify(lineMessage("Deployment is failed"))
-      false
-    } else {
-      lineService.notify(lineMessage("Deployment is complete"))
-      true
-    }
+        if (isError) {
+          lineService.notify(lineMessage("Deployment is failed"))
+        } else {
+          lineService.notify(lineMessage("Deployment is complete"))
+        }
+      } else {
+        lineService.notify(lineMessage("Deployment is failed"))
+      }
+    }}
   }
 }
 
