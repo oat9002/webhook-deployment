@@ -1,6 +1,7 @@
 package services
 
 import cats.effect.IO
+import com.typesafe.scalalogging.LazyLogging
 import common.{Configuration, HttpClient}
 import io.circe.generic.codec.DerivedAsObjectCodec.deriveCodec
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
@@ -12,7 +13,7 @@ trait LineService {
   def prefixClassName[T](c: Class[T])(text: String): String
 }
 
-class LineServiceImpl extends LineService {
+class LineServiceImpl extends LineService with LazyLogging {
   override def notify(message: String): IO[Boolean] = {
 
     val response = HttpClient.get.use { client =>
@@ -28,7 +29,9 @@ class LineServiceImpl extends LineService {
 
       client.expect[String](request).attempt.map {
         case Right(_) => true
-        case Left(_) => false
+        case Left(ex) =>
+          logger.error(s"Error sending message to LINE: ${ex.getMessage}")
+          false
       }
     }
 

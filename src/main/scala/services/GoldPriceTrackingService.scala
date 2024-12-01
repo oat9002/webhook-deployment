@@ -1,6 +1,7 @@
 package services
 
 import cats.effect.IO
+import com.typesafe.scalalogging.LazyLogging
 import common.Commands
 
 import scala.sys.process._
@@ -9,7 +10,7 @@ trait GoldPriceTrackingService {
   def deploy(): IO[Boolean]
 }
 
-class GoldPriceTrackingServiceImpl(lineService: LineService) extends GoldPriceTrackingService {
+class GoldPriceTrackingServiceImpl(lineService: LineService) extends GoldPriceTrackingService with LazyLogging {
   val lineMessage: String => String = lineService.prefixClassName(classOf[GoldPriceTrackingService])
 
   def deploy(): IO[Boolean] = {

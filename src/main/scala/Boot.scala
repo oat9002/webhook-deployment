@@ -1,6 +1,7 @@
 import cats.effect._
 import cats.implicits.toSemigroupKOps
 import com.comcast.ip4s.{IpLiteralSyntax, Port}
+import com.typesafe.scalalogging.LazyLogging
 import common.Configuration
 import controllers.{AuthenticationMiddleware, WebHookRoute}
 import org.http4s._
@@ -9,7 +10,7 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.Router
 
-object Boot extends IOApp {
+object Boot extends IOApp with LazyLogging {
   private val helloRoute = HttpRoutes.of[IO] {
     case GET -> Root =>
       Ok("Hello world!")
@@ -31,7 +32,7 @@ object Boot extends IOApp {
       .use(_ => IO.never)
       .as(ExitCode.Success)
 
-    println(s"Server online at http://localhost:${Configuration.appConfig.port}/")
+    logger.info(s"Server online at http://localhost:${Configuration.appConfig.port}/")
 
     app
   }

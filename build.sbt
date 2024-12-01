@@ -12,9 +12,9 @@ libraryDependencies ++= Seq(
   "org.http4s" %% "http4s-dsl"          % http4s,
   "org.http4s" %% "http4s-circe" % http4s,
   "io.circe" %% "circe-generic" % circe,
-  "com.typesafe.slick" %% "slick" % slick,
-  "org.slf4j" % "slf4j-nop" % slf4,
   "com.typesafe" % "config" % conf,
+  "com.typesafe.scala-logging" %% "scala-logging" % scalaLogging,
+  "ch.qos.logback" % "logback-classic" % logback
 )
 
 enablePlugins(JavaServerAppPackaging)

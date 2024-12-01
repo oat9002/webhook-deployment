@@ -34,7 +34,7 @@ class WebHookRoute {
   }
 
   val route: HttpRoutes[IO] = Router(
-    "/deploy" -> (root <+> RequestTimeoutMiddleware.apply(10.minutes)(AuthenticationMiddleware.apply(deploy)))
+    "docker/deploy" -> (root <+> RequestTimeoutMiddleware.apply(10.minutes)(AuthenticationMiddleware.apply(deploy)))
   )
 }
 
