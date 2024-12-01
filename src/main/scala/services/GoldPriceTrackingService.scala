@@ -1,35 +1,35 @@
 package services
 
-import akka.actor.ActorSystem
-import common.{Commands, DockerUtil}
-import models.DockerWebhook
+import cats.effect.IO
+import com.typesafe.scalalogging.LazyLogging
+import common.Commands
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Success
-import sys.process._
+import scala.sys.process._
 
 trait GoldPriceTrackingService {
-  def deploy(): Boolean
+  def deploy(): IO[Boolean]
 }
 
-class GoldPriceTrackingServiceImpl(lineService: LineService)(implicit ctx: ExecutionContext, system: ActorSystem) extends GoldPriceTrackingService {
+class GoldPriceTrackingServiceImpl(lineService: LineService) extends GoldPriceTrackingService with LazyLogging {
   val lineMessage: String => String = lineService.prefixClassName(classOf[GoldPriceTrackingService])
 
-  def deploy(): Boolean = {
-    lineService.notify(lineMessage("Start Deployment"))
+  def deploy(): IO[Boolean] = {
+    lineService.notify(lineMessage("Start Deployment")).flatMap { result => {
+      if (result) {
+        val isError = Commands.goldPriceTrackingDeploy.map(_.!).exists(_ != 0)
 
-    val isError = Commands.goldPriceTrackingDeploy.map(_.!).exists(_ != 0)
-
-    if (isError) {
-      lineService.notify(lineMessage("Deployment is failed"))
-      false
-    } else {
-      lineService.notify(lineMessage("Deployment is complete"))
-      true
-    }
+        if (isError) {
+          lineService.notify(lineMessage("Deployment is failed"))
+        } else {
+          lineService.notify(lineMessage("Deployment is complete"))
+        }
+      } else {
+        lineService.notify(lineMessage("Deployment is failed"))
+      }
+    }}
   }
 }
 
 object GoldPriceTrackingService {
-  def apply(lineService: LineService)(implicit ctx: ExecutionContext, system: ActorSystem): GoldPriceTrackingService = new GoldPriceTrackingServiceImpl(lineService)
+  def apply(lineService: LineService): GoldPriceTrackingService = new GoldPriceTrackingServiceImpl(lineService)
 }

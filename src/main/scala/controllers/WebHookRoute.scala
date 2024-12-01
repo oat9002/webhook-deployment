@@ -1,64 +1,43 @@
 package controllers
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
-import models.DockerWebhookJsonProtocol
+
+import cats.effect.IO
+import cats.implicits.toSemigroupKOps
+import org.http4s.HttpRoutes
 import services.{CryptoNotifyService, GoldPriceTrackingService, LineService}
+import org.http4s._
+import org.http4s.dsl.io._
+import org.http4s.server.Router
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.DurationInt
 
-class WebHookRoute(implicit ctx: ExecutionContext, actorSystem: ActorSystem) extends DockerWebhookJsonProtocol {
-  val authenticationRoute: AuthenticationRoute = AuthenticationRoute()
-  val routes: Route = authenticationRoute.routes ~ root ~ deploy
-  val lineService: LineService = LineService(ctx, actorSystem)
+
+class WebHookRoute {
+  val lineService: LineService = LineService()
   val goldPriceTrackingService: GoldPriceTrackingService = GoldPriceTrackingService(lineService)
-  val cryptoNotifyService: CryptoNotifyService = CryptoNotifyService(lineService)
 
-  def root: Route = pathEndOrSingleSlash {
-    get {
-      complete(HttpEntity(ContentTypes.`application/json`, "Welcome to webhook deployment"))
+  private val root: HttpRoutes[IO] = HttpRoutes.of[IO] {
+    case GET -> Root => Ok("Welcome to webhook deployment")
+  }
+
+  private val deploy: AuthedRoutes[Boolean, IO] = AuthedRoutes.of {
+    case GET -> Root /  "goldpricetracking" as isAuthed => {
+      if (!isAuthed) {
+        Forbidden("Unauthorized!")
+      } else {
+        goldPriceTrackingService.deploy().flatMap {
+          case true => Ok("Deployment is complete")
+          case _ => InternalServerError("Deployment is failed")
+        }
+      }
     }
   }
 
-  def deploy: Route =
-    pathPrefix("docker") {
-      concat(
-        pathPrefix("deploy") {
-          concat(
-            path("goldpricetracking") {
-              concat(
-                pathEndOrSingleSlash {
-                  get {
-                    if (goldPriceTrackingService.deploy()) {
-                      complete(StatusCodes.OK)
-                    } else {
-                      complete(StatusCodes.InternalServerError)
-                    }
-                  }
-                }
-              )
-            },
-            path("cryptonotify") {
-              concat(
-                pathEndOrSingleSlash {
-                  get {
-                    if (cryptoNotifyService.deploy()) {
-                      complete(StatusCodes.OK)
-                    } else {
-                      complete(StatusCodes.InternalServerError)
-                    }
-                  }
-                }
-              )
-            }
-          )
-        }
-      )
-    }
+  val route: HttpRoutes[IO] = Router(
+    "docker/deploy" -> (root <+> RequestTimeoutMiddleware.apply(10.minutes)(AuthenticationMiddleware.apply(deploy)))
+  )
 }
 
 object WebHookRoute {
-  def apply(implicit ctx: ExecutionContext, actorSystem: ActorSystem) = new WebHookRoute
+  def apply() = new WebHookRoute
 }

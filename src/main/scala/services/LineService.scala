@@ -1,32 +1,41 @@
 package services
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.model.{FormData, HttpHeader, HttpMethods, HttpRequest, HttpResponse, StatusCodes}
-import common.Configuration
-
-import scala.concurrent.{ExecutionContext, Future}
+import cats.effect.IO
+import com.typesafe.scalalogging.LazyLogging
+import common.{Configuration, HttpClient}
+import io.circe.generic.codec.DerivedAsObjectCodec.deriveCodec
+import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
+import org.http4s.headers.{Authorization, `Content-Type`}
+import org.http4s.{Headers, MediaType, Request, Uri, UrlForm}
 
 trait LineService {
-  def notify(message: String): Future[Boolean]
+  def notify(message: String): IO[Boolean]
   def prefixClassName[T](c: Class[T])(text: String): String
 }
 
-class LineServiceImpl(implicit ctx: ExecutionContext, system: ActorSystem) extends LineService {
-  override def notify(message: String): Future[Boolean] = {
-    val response = Http().singleRequest(HttpRequest(
-        uri = Configuration.lineConfig.url,
-        method = HttpMethods.POST,
-        entity = FormData(Map("message" -> message)).toEntity,
-        headers = Seq[HttpHeader](RawHeader("Authorization", s"Bearer ${Configuration.lineConfig.lineNotifyToken}"))
-      ))
+class LineServiceImpl extends LineService with LazyLogging {
+  override def notify(message: String): IO[Boolean] = {
 
+    val response = HttpClient.get.use { client =>
+      val request = Request[IO](
+        uri = Uri.fromString(s"${Configuration.lineConfig.url}") match {
+          case Right(uri) => uri
+          case _ => throw new Exception("Invalid URL")
+        },
+        method = org.http4s.Method.POST,
+        headers = Headers(Authorization.parse(s"Bearer ${Configuration.lineConfig.lineNotifyToken}"), `Content-Type`(MediaType.application.`x-www-form-urlencoded`))
+      )
+        .withEntity(UrlForm("message" -> message))
 
-    response.flatMap {
-      case HttpResponse(StatusCodes.OK, _, entity, _) => entity.discardBytes().future().map(_ => true)
-      case _ => Future.successful(false)
+      client.expect[String](request).attempt.map {
+        case Right(_) => true
+        case Left(ex) =>
+          logger.error(s"Error sending message to LINE: ${ex.getMessage}")
+          false
+      }
     }
+
+    response
   }
 
   override def prefixClassName[T](c: Class[T])(text: String): String = {
@@ -35,5 +44,5 @@ class LineServiceImpl(implicit ctx: ExecutionContext, system: ActorSystem) exten
 }
 
 object LineService {
-  def apply(implicit ctx: ExecutionContext, system: ActorSystem): LineService = new LineServiceImpl()
+  def apply(): LineService = new LineServiceImpl()
 }

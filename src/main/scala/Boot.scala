@@ -1,35 +1,39 @@
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
-import akka.http.scaladsl.server.Directives.{complete, concat, get, getFromResource, getFromResourceDirectory, path, pathPrefix, pathSingleSlash, withRequestTimeout}
+import cats.effect._
+import cats.implicits.toSemigroupKOps
+import com.comcast.ip4s.{IpLiteralSyntax, Port}
+import com.typesafe.scalalogging.LazyLogging
 import common.Configuration
-import controllers.{AuthenticationRoute, WebHookRoute}
+import controllers.{AuthenticationMiddleware, WebHookRoute}
+import org.http4s._
+import org.http4s.dsl.io._
+import org.http4s.ember.server.EmberServerBuilder
+import org.http4s.implicits._
+import org.http4s.server.Router
 
-import scala.concurrent.ExecutionContextExecutor
-import scala.concurrent.duration.DurationInt
+object Boot extends IOApp with LazyLogging {
+  private val helloRoute = HttpRoutes.of[IO] {
+    case GET -> Root =>
+      Ok("Hello world!")
+  }
 
-object Boot extends App {
-  implicit val system: ActorSystem = ActorSystem()
-  // needed for the future flatMap/onComplete in the end
-  implicit val executionContext: ExecutionContextExecutor = system.dispatcher
-  val webHookRoute = WebHookRoute(executionContext, system)
+  private val webHookRoute = WebHookRoute().route
 
-  val route =
-    concat(
-      pathSingleSlash {
-        get {
-          complete(
-            HttpEntity(ContentTypes.`application/json`,
-              "Say hello to akka-http"))
-        }
-      },
-      pathPrefix("webhook") {
-        withRequestTimeout(10.minutes)(webHookRoute.routes)
-      }
-    )
+  private val route = helloRoute <+> webHookRoute
+  private val httpApp = Router("/" -> route ).orNotFound
+  private val port = Port.fromInt(Configuration.appConfig.port).getOrElse(port"8080")
 
-  val bindingFuture =
-    Http().newServerAt("localhost", Configuration.appConfig.port).bind(route)
+  override def run(args: List[String]): IO[ExitCode] = {
+    val app = EmberServerBuilder
+      .default[IO]
+      .withHost(ipv4"0.0.0.0")
+      .withPort(port)
+      .withHttpApp(httpApp)
+      .build
+      .use(_ => IO.never)
+      .as(ExitCode.Success)
 
-  println(s"Server online at http://localhost:${Configuration.appConfig.port}/")
+    logger.info(s"Server online at http://localhost:${Configuration.appConfig.port}/")
+
+    app
+  }
 }
