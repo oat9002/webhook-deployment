@@ -1,16 +1,14 @@
 package controllers
 
-
 import cats.effect.IO
 import cats.implicits.toSemigroupKOps
-import org.http4s.HttpRoutes
-import services.{CryptoNotifyService, GoldPriceTrackingService, LineService}
-import org.http4s._
+import org.http4s.{HttpRoutes, _}
 import org.http4s.dsl.io._
 import org.http4s.server.Router
+import org.http4s.server.middleware.Timeout
+import services.{GoldPriceTrackingService, LineService}
 
 import scala.concurrent.duration.DurationInt
-
 
 class WebHookRoute {
   val lineService: LineService = LineService()
@@ -34,7 +32,7 @@ class WebHookRoute {
   }
 
   val route: HttpRoutes[IO] = Router(
-    "docker/deploy" -> (root <+> RequestTimeoutMiddleware.apply(10.minutes)(AuthenticationMiddleware.apply(deploy)))
+    "docker/deploy" -> (root <+> Timeout.httpRoutes(10.minutes)(AuthenticationMiddleware.apply(deploy)))
   )
 }
 
