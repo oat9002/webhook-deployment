@@ -4,18 +4,22 @@ import sbtrelease.ReleaseStateTransformations.{checkSnapshotDependencies, commit
 name := "webhook-deployment"
 maintainer := "oat9002"
 
-scalaVersion := "2.13.15"
+ThisBuild / scalaVersion := "2.13.15"
 
-libraryDependencies ++= Seq(
-  "org.http4s" %% "http4s-ember-client" % http4s,
-  "org.http4s" %% "http4s-ember-server" % http4s,
-  "org.http4s" %% "http4s-dsl"          % http4s,
-  "org.http4s" %% "http4s-circe" % http4s,
-  "io.circe" %% "circe-generic" % circe,
-  "com.typesafe" % "config" % conf,
-  "com.typesafe.scala-logging" %% "scala-logging" % scalaLogging,
-  "ch.qos.logback" % "logback-classic" % logback
-)
+lazy val root = project
+  .in(file("."))
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.http4s" %% "http4s-ember-client" % http4s,
+      "org.http4s" %% "http4s-ember-server" % http4s,
+      "org.http4s" %% "http4s-dsl"          % http4s,
+      "org.http4s" %% "http4s-circe" % http4s,
+      "io.circe" %% "circe-generic" % circe,
+      "com.typesafe" % "config" % conf,
+      "com.typesafe.scala-logging" %% "scala-logging" % scalaLogging,
+      "ch.qos.logback" % "logback-classic" % logback
+    )
+  )
 
 enablePlugins(JavaServerAppPackaging)
 
