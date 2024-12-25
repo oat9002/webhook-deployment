@@ -17,6 +17,7 @@ jobs:
         run: |
             git config --global user.name 'oat9002'
             git config --global user.email 'oat9002@hotmail.com'
+      - uses: sbt/setup-sbt@v1
       - name: Release
         run: sbt "release with-defaults"
         env:

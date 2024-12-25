@@ -1,14 +1,13 @@
 import Dependency.*
 import sbtrelease.ReleaseStateTransformations.{checkSnapshotDependencies, commitNextVersion, commitReleaseVersion, inquireVersions, pushChanges, runClean, runTest, setNextVersion, setReleaseVersion, tagRelease}
 
-name := "webhook-deployment"
-maintainer := "oat9002"
-
 ThisBuild / scalaVersion := "2.13.15"
 
 lazy val root = project
   .in(file("."))
   .settings(
+    name := "webhook-deployment",
+    maintainer := "oat9002",
     libraryDependencies ++= Seq(
       "org.http4s" %% "http4s-ember-client" % http4s,
       "org.http4s" %% "http4s-ember-server" % http4s,
