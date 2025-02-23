@@ -18,7 +18,9 @@ object Configuration {
   private val appSection = conf.getConfig("app")
   lazy val lineConfig: LineConfig = LineConfig(lineSection.getString("lineNotifyToken"), lineSection.getString("url"))
   lazy val appConfig: AppConfig = AppConfig(appSection.getString("env"), appSection.getString("apiKey"), appSection.getInt("port"))
+  lazy val telegramConfig: TelegramConfig = TelegramConfig("", "")
 }
 
 case class LineConfig(lineNotifyToken: String, url: String)
 case class AppConfig(env: String, apiKey: String, port: Int)
+case class TelegramConfig(botToken: String, chatId: String)

@@ -10,7 +10,7 @@ trait GoldPriceTrackingService {
   def deploy(): IO[Boolean]
 }
 
-class GoldPriceTrackingServiceImpl(lineService: LineService) extends GoldPriceTrackingService with LazyLogging {
+class GoldPriceTrackingServiceImpl(lineService: TelegramService) extends GoldPriceTrackingService with LazyLogging {
   val lineMessage: String => String = lineService.prefixClassName(classOf[GoldPriceTrackingService])
 
   def deploy(): IO[Boolean] = {
@@ -31,5 +31,5 @@ class GoldPriceTrackingServiceImpl(lineService: LineService) extends GoldPriceTr
 }
 
 object GoldPriceTrackingService {
-  def apply(lineService: LineService): GoldPriceTrackingService = new GoldPriceTrackingServiceImpl(lineService)
+  def apply(lineService: TelegramService): GoldPriceTrackingService = new GoldPriceTrackingServiceImpl(lineService)
 }

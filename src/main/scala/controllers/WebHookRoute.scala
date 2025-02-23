@@ -2,16 +2,16 @@ package controllers
 
 import cats.effect.IO
 import cats.implicits.toSemigroupKOps
-import org.http4s.{HttpRoutes, _}
+import org.http4s._
 import org.http4s.dsl.io._
 import org.http4s.server.Router
 import org.http4s.server.middleware.Timeout
-import services.{GoldPriceTrackingService, LineService}
+import services.{GoldPriceTrackingService, TelegramService}
 
 import scala.concurrent.duration.DurationInt
 
 class WebHookRoute {
-  val lineService: LineService = LineService()
+  val lineService: TelegramService = TelegramService()
   val goldPriceTrackingService: GoldPriceTrackingService = GoldPriceTrackingService(lineService)
 
   private val root: HttpRoutes[IO] = HttpRoutes.of[IO] {
