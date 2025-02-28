@@ -15,8 +15,9 @@ object Configuration {
     }
   }
   private val appSection = conf.getConfig("app")
+  private val telegramSection = conf.getConfig("telegram")
   lazy val appConfig: AppConfig = AppConfig(appSection.getString("apiKey"), appSection.getInt("port"))
-  lazy val telegramConfig: TelegramConfig = TelegramConfig("botToken", "chatId")
+  lazy val telegramConfig: TelegramConfig = TelegramConfig(telegramSection.getString("botToken"), telegramSection.getString("chatId"))
 }
 
 case class AppConfig(apiKey: String, port: Int)
