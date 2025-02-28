@@ -2,8 +2,8 @@ import cats.effect._
 import cats.implicits.toSemigroupKOps
 import com.comcast.ip4s.{IpLiteralSyntax, Port}
 import com.typesafe.scalalogging.LazyLogging
-import common.Configuration
-import controllers.{AuthenticationMiddleware, WebHookRoute}
+import common.{Configuration, EnvironmentHelper}
+import controllers.{TestRoute, WebHookRoute}
 import org.http4s._
 import org.http4s.dsl.io._
 import org.http4s.ember.server.EmberServerBuilder
@@ -17,8 +17,8 @@ object Boot extends IOApp with LazyLogging {
   }
 
   private val webHookRoute = WebHookRoute().route
-
-  private val route = helloRoute <+> webHookRoute
+  private val testRoute = TestRoute().route
+  private val route = helloRoute <+> webHookRoute <+> testRoute
   private val httpApp = Router("/" -> route ).orNotFound
   private val port = Port.fromInt(Configuration.appConfig.port).getOrElse(port"8080")
 
@@ -33,6 +33,7 @@ object Boot extends IOApp with LazyLogging {
       .as(ExitCode.Success)
 
     logger.info(s"Server online at http://localhost:${Configuration.appConfig.port}/")
+    logger.info(s"Environment: ${if(EnvironmentHelper.isDevelopment) "Development" else "Production"}")
 
     app
   }

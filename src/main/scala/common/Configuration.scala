@@ -5,8 +5,8 @@ import com.typesafe.config.{Config, ConfigFactory}
 object Configuration {
   private val conf: Config = {
     val c = ConfigFactory.load()
-    val env = System.getenv().getOrDefault("env", "development")
-    if (!"production".equals(env)) {
+
+    if (EnvironmentHelper.isDevelopment) {
       val toReturn = ConfigFactory.load("application.local")
       ConfigFactory.invalidateCaches()
       toReturn
@@ -15,9 +15,9 @@ object Configuration {
     }
   }
   private val appSection = conf.getConfig("app")
-  lazy val appConfig: AppConfig = AppConfig(appSection.getString("env"), appSection.getString("apiKey"), appSection.getInt("port"))
+  lazy val appConfig: AppConfig = AppConfig(appSection.getString("apiKey"), appSection.getInt("port"))
   lazy val telegramConfig: TelegramConfig = TelegramConfig("botToken", "chatId")
 }
 
-case class AppConfig(env: String, apiKey: String, port: Int)
+case class AppConfig(apiKey: String, port: Int)
 case class TelegramConfig(botToken: String, chatId: String)
