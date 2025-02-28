@@ -11,8 +11,8 @@ import services.{GoldPriceTrackingService, TelegramService}
 import scala.concurrent.duration.DurationInt
 
 class WebHookRoute {
-  val lineService: TelegramService = TelegramService()
-  val goldPriceTrackingService: GoldPriceTrackingService = GoldPriceTrackingService(lineService)
+  val telegramService: TelegramService = TelegramService()
+  val goldPriceTrackingService: GoldPriceTrackingService = GoldPriceTrackingService(telegramService)
 
   private val root: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok("Welcome to webhook deployment")

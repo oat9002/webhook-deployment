@@ -17,7 +17,7 @@ trait TelegramService {
 
 class TelegramServiceImpl extends TelegramService with LazyLogging {
   private val charset = "UTF-8"
-  private val baseUrl = ""
+  private val baseUrl = "https://api.telegram.org"
 
   override def notify(message: String): IO[Boolean] = {
     val botToken = Configuration.telegramConfig.botToken

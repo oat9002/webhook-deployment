@@ -8,24 +8,24 @@ trait CryptoNotifyService {
   def deploy(): Boolean
 }
 
-class CryptoNotifyServiceImpl(lineService: TelegramService) extends CryptoNotifyService {
+class CryptoNotifyServiceImpl(telegramService: TelegramService) extends CryptoNotifyService {
   override def deploy(): Boolean = {
-    val lineMessage: String => String = lineService.prefixClassName(classOf[CryptoNotifyService])
+    val message: String => String = telegramService.prefixClassName(classOf[CryptoNotifyService])
 
-    lineService.notify(lineMessage("Start Deployment"))
+    telegramService.notify(message("Start Deployment"))
 
     val isError = Commands.cryptoNotifyDeploy.map(_.!).exists(_ != 0)
 
     if (isError) {
-      lineService.notify(lineMessage("Deployment is failed"))
+      telegramService.notify(message("Deployment is failed"))
       false
     } else {
-      lineService.notify(lineMessage("Deployment is complete"))
+      telegramService.notify(message("Deployment is complete"))
       true
     }
   }
 }
 
 object CryptoNotifyService {
-  def apply(lineService: TelegramService): CryptoNotifyService = new CryptoNotifyServiceImpl(lineService)
+  def apply(telegramService: TelegramService): CryptoNotifyService = new CryptoNotifyServiceImpl(telegramService)
 }
