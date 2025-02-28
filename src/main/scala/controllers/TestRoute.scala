@@ -15,12 +15,12 @@ class TestRoute {
       case GET -> Root / "test" / "notify" =>
         telegramService.notify("Test Notification").flatMap {
           case true => Ok("Notification is sent")
-          case _ => Ok("Notification is failed")
+          case _    => Ok("Notification is failed")
         }
     }
   } else {
-    HttpRoutes.of[IO] {
-      case GET -> Root => NotAcceptable("route not allowed")
+    HttpRoutes.of[IO] { case GET -> Root =>
+      NotAcceptable("route not allowed")
     }
   }
 }

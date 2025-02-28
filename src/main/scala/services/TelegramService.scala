@@ -5,7 +5,7 @@ import com.typesafe.scalalogging.LazyLogging
 import common.{Configuration, HttpClient}
 import io.circe.generic.codec.DerivedAsObjectCodec.deriveCodec
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
-import org.http4s.headers.{Authorization, `Content-Type`}
+import org.http4s.headers.`Content-Type`
 import org.http4s.{Headers, MediaType, Request, Uri, UrlForm}
 
 import java.net.URLEncoder
@@ -32,10 +32,11 @@ class TelegramServiceImpl extends TelegramService with LazyLogging {
       val request = Request[IO](
         uri = Uri.fromString(url) match {
           case Right(uri) => uri
-          case _ => throw new Exception("Invalid URL")
+          case _          => throw new Exception("Invalid URL")
         },
         method = org.http4s.Method.GET,
-        headers = Headers(`Content-Type`(MediaType.application.`x-www-form-urlencoded`))
+        headers =
+          Headers(`Content-Type`(MediaType.application.`x-www-form-urlencoded`))
       )
         .withEntity(UrlForm("message" -> message))
 

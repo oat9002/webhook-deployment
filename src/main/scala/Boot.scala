@@ -11,16 +11,16 @@ import org.http4s.implicits._
 import org.http4s.server.Router
 
 object Boot extends IOApp with LazyLogging {
-  private val helloRoute = HttpRoutes.of[IO] {
-    case GET -> Root =>
-      Ok("Hello world!")
+  private val helloRoute = HttpRoutes.of[IO] { case GET -> Root =>
+    Ok("Hello world!")
   }
 
   private val webHookRoute = WebHookRoute().route
   private val testRoute = TestRoute().route
   private val route = helloRoute <+> webHookRoute <+> testRoute
-  private val httpApp = Router("/" -> route ).orNotFound
-  private val port = Port.fromInt(Configuration.appConfig.port).getOrElse(port"8080")
+  private val httpApp = Router("/" -> route).orNotFound
+  private val port =
+    Port.fromInt(Configuration.appConfig.port).getOrElse(port"8080")
 
   override def run(args: List[String]): IO[ExitCode] = {
     val app = EmberServerBuilder
@@ -32,8 +32,13 @@ object Boot extends IOApp with LazyLogging {
       .use(_ => IO.never)
       .as(ExitCode.Success)
 
-    logger.info(s"Server online at http://localhost:${Configuration.appConfig.port}/")
-    logger.info(s"Environment: ${if(EnvironmentHelper.isDevelopment) "Development" else "Production"}")
+    logger.info(
+      s"Server online at http://localhost:${Configuration.appConfig.port}/"
+    )
+    logger.info(
+      s"Environment: ${if (EnvironmentHelper.isDevelopment) "Development"
+      else "Production"}"
+    )
 
     app
   }

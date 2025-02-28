@@ -8,9 +8,11 @@ trait CryptoNotifyService {
   def deploy(): Boolean
 }
 
-class CryptoNotifyServiceImpl(telegramService: TelegramService) extends CryptoNotifyService {
+class CryptoNotifyServiceImpl(telegramService: TelegramService)
+    extends CryptoNotifyService {
   override def deploy(): Boolean = {
-    val message: String => String = telegramService.prefixClassName(classOf[CryptoNotifyService])
+    val message: String => String =
+      telegramService.prefixClassName(classOf[CryptoNotifyService])
 
     telegramService.notify(message("Start Deployment"))
 
@@ -27,5 +29,6 @@ class CryptoNotifyServiceImpl(telegramService: TelegramService) extends CryptoNo
 }
 
 object CryptoNotifyService {
-  def apply(telegramService: TelegramService): CryptoNotifyService = new CryptoNotifyServiceImpl(telegramService)
+  def apply(telegramService: TelegramService): CryptoNotifyService =
+    new CryptoNotifyServiceImpl(telegramService)
 }
