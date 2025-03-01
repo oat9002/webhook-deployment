@@ -49,8 +49,8 @@ jobs:
         run: sbt "universal:packageBin"
         env:
           WEBHOOK_DEPLOYMENT_API_KEY: ${{ secrets.WEBHOOK_DEPLOYMENT_API_KEY }}
-          WEBHOOK_DEPLOYMENT_LINE_NOTIFY_TOKEN: ${{ secrets.WEBHOOK_DEPLOYMENT_LINE_NOTIFY_TOKEN }}
-          WEBHOOK_DEPLOYMENT_LINE_NOTIFY_URL: ${{ secrets.WEBHOOK_DEPLOYMENT_LINE_NOTIFY_URL }}
+          WEBHOOK_DEPLOYMENT_TELEGRAM_BOT_TOKEN: ${{ secrets.WEBHOOK_DEPLOYMENT_TELEGRAM_BOT_TOKEN }}
+          WEBHOOK_DEPLOYMENT_TELEGRAM_CHAT_ID: ${{ secrets.WEBHOOK_DEPLOYMENT_TELEGRAM_CHAT_ID }}
       - name: Publish GitHub Release
         uses: ncipollo/release-action@v1
         with:
