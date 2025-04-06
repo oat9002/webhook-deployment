@@ -31,7 +31,7 @@ class FirebaseServiceImpl(
 
     IO.pure(
       collectionRef.addSnapshotListener(
-        (value: QuerySnapshot, error: FirestoreException) => {
+        (value, _) => {
           if (value != null && !value.isEmpty) {
             value.getDocumentChanges.forEach { change =>
               if (change.getType == DocumentChange.Type.ADDED) {
