@@ -11,8 +11,9 @@ import com.google.cloud.firestore.{
   ListenerRegistration,
   QuerySnapshot
 }
+import com.google.firebase.cloud.FirestoreClient
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
-import common.{Constants, Deployment}
+import common.{Configuration, Constants, Deployment}
 
 import java.io.ByteArrayInputStream
 
@@ -31,22 +32,17 @@ class FirebaseServiceImpl(
     IO.pure(
       collectionRef.addSnapshotListener(
         (value: QuerySnapshot, error: FirestoreException) => {
-          if (error != null) {
-            println(s"Error listening to Firestore: ${error.getMessage}")
-
-            IO.canceled
-          } else if (value != null && !value.isEmpty) {
+          if (value != null && !value.isEmpty) {
             value.getDocumentChanges.forEach { change =>
               if (change.getType == DocumentChange.Type.ADDED) {
                 val doc = change.getDocument
                 val data = doc.getData
                 val deploymentService =
-                  Deployment(data.asInstanceOf[Map[String, AnyRef]])
+                  Deployment(data)
 
                 deploymentService.service match {
-                  case Constants.ServiceEnum.CryptoNotify =>
-                    IO.canceled
-                  case Constants.ServiceEnum.GoldPriceTracking =>
+                  case Constants.ServiceEnum.GoldPriceTracking
+                      if !deploymentService.isSuccess =>
                     goldPriceTrackingService
                       .deploy()
                       .flatMap { isSuccess =>
@@ -60,7 +56,7 @@ class FirebaseServiceImpl(
               }
             }
           } else {
-            IO.println("No changes in Firestore")
+            println("No documents found in the collection.")
           }
         }
       )
@@ -85,27 +81,17 @@ object FirebaseService {
 }
 
 private object Firebase {
-  val app: FirebaseApp = {
-    val secretAccount =
-      System.getenv("DEPLOYMENT_TRIGGERER_FIREBASE_SERVICE_ACCOUNT_KEY_JSON")
-
-    if (secretAccount.isEmpty) {
-      throw new IllegalArgumentException(
-        "Firebase service account key JSON is not set in environment variable DEPLOYMENT_TRIGGERER_FIREBASE_SERVICE_ACCOUNT_KEY_JSON"
+  private val secretAccount = Configuration.firebase.secret
+  private val firebaseOptions = FirebaseOptions
+    .builder()
+    .setCredentials(
+      GoogleCredentials.fromStream(
+        new ByteArrayInputStream(secretAccount.getBytes("UTF-8"))
       )
-    }
+    )
+    .build()
 
-    val firebaseOptions = FirebaseOptions
-      .builder()
-      .setCredentials(
-        GoogleCredentials.fromStream(
-          new ByteArrayInputStream(secretAccount.getBytes("UTF-8"))
-        )
-      )
-      .build()
+  FirebaseApp.initializeApp(firebaseOptions)
 
-    FirebaseApp.initializeApp(firebaseOptions)
-  }
-
-  val firestore: Firestore = FirestoreOptions.getDefaultInstance.getService
+  val firestore: Firestore = FirestoreClient.getFirestore
 }

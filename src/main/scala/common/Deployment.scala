@@ -1,5 +1,6 @@
 package common
 
+import com.google.cloud.Timestamp
 import common.Constants.ServiceEnum
 import common.Constants.ServiceEnum.ServiceEnum
 
@@ -7,18 +8,18 @@ import java.time.LocalDateTime
 
 case class Deployment(
     service: ServiceEnum,
-    createdAt: LocalDateTime,
+    createdAt: Timestamp,
     isSuccess: Boolean
 )
 
 object Deployment {
-  def apply(doc: Map[String, AnyRef]): Deployment = {
-    val serviceId = doc.getOrElse(Constants.serviceId, 0).asInstanceOf[Int]
+  def apply(doc: java.util.Map[String, Object]): Deployment = {
+    val serviceId = doc.get(Constants.serviceId).asInstanceOf[Long].toInt
     val createdAt = doc
-      .getOrElse(Constants.createdAt, LocalDateTime.now())
-      .asInstanceOf[LocalDateTime]
+      .get(Constants.createdAt)
+      .asInstanceOf[Timestamp]
     val isSuccess =
-      doc.getOrElse(Constants.isSuccess, false).asInstanceOf[Boolean]
+      doc.get(Constants.isSuccess).asInstanceOf[Boolean]
 
     Deployment(ServiceEnum.fromInt(serviceId), createdAt, isSuccess)
   }
