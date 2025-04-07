@@ -1,16 +1,17 @@
 package services
 
+import cats.effect.IO
 import common.Commands
 
 import sys.process._
 
 trait CryptoNotifyService {
-  def deploy(): Boolean
+  def deploy(): IO[Boolean]
 }
 
 class CryptoNotifyServiceImpl(telegramService: TelegramService)
     extends CryptoNotifyService {
-  override def deploy(): Boolean = {
+  override def deploy(): IO[Boolean] = {
     val message: String => String =
       telegramService.prefixClassName(classOf[CryptoNotifyService])
 
@@ -20,10 +21,8 @@ class CryptoNotifyServiceImpl(telegramService: TelegramService)
 
     if (isError) {
       telegramService.notify(message("Deployment is failed"))
-      false
     } else {
       telegramService.notify(message("Deployment is complete"))
-      true
     }
   }
 }

@@ -22,7 +22,8 @@ trait FirebaseService {
 }
 
 class FirebaseServiceImpl(
-    goldPriceTrackingService: GoldPriceTrackingService
+    goldPriceTrackingService: GoldPriceTrackingService,
+    cryptoNotifyService: CryptoNotifyService
 ) extends FirebaseService {
 
   override def subscribeToDeployment(): IO[Unit] = {
@@ -30,36 +31,43 @@ class FirebaseServiceImpl(
     val collectionRef = firestore.collection(Constants.deployments)
 
     IO.pure(
-      collectionRef.addSnapshotListener(
-        (value, _) => {
-          if (value != null && !value.isEmpty) {
-            value.getDocumentChanges.forEach { change =>
-              if (change.getType == DocumentChange.Type.ADDED) {
-                val doc = change.getDocument
-                val data = doc.getData
-                val deploymentService =
-                  Deployment(data)
+      collectionRef.addSnapshotListener((value, _) => {
+        if (value != null && !value.isEmpty) {
+          value.getDocumentChanges.forEach { change =>
+            if (change.getType == DocumentChange.Type.ADDED) {
+              val doc = change.getDocument
+              val data = doc.getData
+              val deploymentService =
+                Deployment(data)
 
-                deploymentService.service match {
-                  case Constants.ServiceEnum.GoldPriceTracking
-                      if !deploymentService.isSuccess =>
-                    goldPriceTrackingService
-                      .deploy()
-                      .flatMap { isSuccess =>
-                        if (isSuccess) {
-                          updateDeploymentComplete(doc.getId)
-                        } else {
-                          IO.println("Deployment failed")
-                        }
+              deploymentService.service match {
+                case Constants.ServiceEnum.CryptoNotify
+                    if !deploymentService.isSuccess =>
+                  cryptoNotifyService.deploy().flatMap { isSuccess =>
+                    if (isSuccess) {
+                      updateDeploymentComplete(doc.getId)
+                    } else {
+                      IO.println("Deployment failed")
+                    }
+                  }
+                case Constants.ServiceEnum.GoldPriceTracking
+                    if !deploymentService.isSuccess =>
+                  goldPriceTrackingService
+                    .deploy()
+                    .flatMap { isSuccess =>
+                      if (isSuccess) {
+                        updateDeploymentComplete(doc.getId)
+                      } else {
+                        IO.println("Deployment failed")
                       }
-                }
+                    }
               }
             }
-          } else {
-            println("No documents found in the collection.")
           }
+        } else {
+          println("No documents found in the collection.")
         }
-      )
+      })
     )
   }
 
@@ -74,9 +82,10 @@ class FirebaseServiceImpl(
 
 object FirebaseService {
   def apply(
-      goldPriceTrackingService: GoldPriceTrackingService
+      goldPriceTrackingService: GoldPriceTrackingService,
+      cryptoNotifyService: CryptoNotifyService
   ): FirebaseService = {
-    new FirebaseServiceImpl(goldPriceTrackingService)
+    new FirebaseServiceImpl(goldPriceTrackingService, cryptoNotifyService)
   }
 }
 
