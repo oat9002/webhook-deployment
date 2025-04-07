@@ -9,17 +9,24 @@ import org.http4s.dsl.io._
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.Router
-import services.{FirebaseService, GoldPriceTrackingService, TelegramService}
+import services.{
+  CryptoNotifyService,
+  FirebaseService,
+  GoldPriceTrackingService,
+  TelegramService
+}
 
 object Boot extends IOApp with LazyLogging {
   private val helloRoute = HttpRoutes.of[IO] { case GET -> Root =>
     Ok("Hello world!")
   }
   private val telegramService: TelegramService = TelegramService()
+  private val cryptoNotifyService: CryptoNotifyService =
+    CryptoNotifyService(telegramService)
   private val goldPriceTrackingService: GoldPriceTrackingService =
     GoldPriceTrackingService(telegramService)
   private val firebaseService: FirebaseService =
-    FirebaseService(goldPriceTrackingService)
+    FirebaseService(goldPriceTrackingService, cryptoNotifyService)
   private val webHookRoute =
     WebHookRoute(telegramService, goldPriceTrackingService).route
   private val testRoute = TestRoute().route

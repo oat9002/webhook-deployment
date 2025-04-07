@@ -11,6 +11,6 @@ object Commands {
     "docker stop crypto-notify_crypto-notify_1",
     "docker rm crypto-notify_crypto-notify_1",
     "docker image rm oat9002/crypto-notify",
-    s"docker-compose -f ${Configuration.cryptoNotifyConfig.folderPath}/docker-compose.yml up -d"
+    s"${Configuration.cryptoNotifyConfig.folderPath}/docker-compose.yml up -d"
   )
 }
