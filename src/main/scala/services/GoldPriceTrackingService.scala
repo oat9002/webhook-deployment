@@ -13,7 +13,7 @@ trait GoldPriceTrackingService {
 class GoldPriceTrackingServiceImpl(telegramService: TelegramService)
     extends GoldPriceTrackingService
     with LazyLogging {
-  val message: String => String =
+  private val message: String => String =
     telegramService.prefixClassName(classOf[GoldPriceTrackingService])
 
   def deploy(): IO[Boolean] = {

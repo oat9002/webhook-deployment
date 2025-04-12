@@ -34,7 +34,7 @@ class TelegramServiceImpl extends TelegramService with LazyLogging {
           case Right(uri) => uri
           case _          => throw new Exception("Invalid URL")
         },
-        method = org.http4s.Method.GET,
+        method = org.http4s.Method.POST,
         headers =
           Headers(`Content-Type`(MediaType.application.`x-www-form-urlencoded`))
       )

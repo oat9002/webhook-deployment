@@ -1,6 +1,7 @@
 package services
 
 import cats.effect.IO
+import com.typesafe.scalalogging.LazyLogging
 import common.Commands
 
 import sys.process._
@@ -10,19 +11,24 @@ trait CryptoNotifyService {
 }
 
 class CryptoNotifyServiceImpl(telegramService: TelegramService)
-    extends CryptoNotifyService {
+    extends CryptoNotifyService
+    with LazyLogging {
+  private val message: String => String =
+    telegramService.prefixClassName(classOf[CryptoNotifyService])
+
   override def deploy(): IO[Boolean] = {
-    val message: String => String =
-      telegramService.prefixClassName(classOf[CryptoNotifyService])
+    telegramService.notify(message("Start Deployment")).flatMap { isSuccess =>
+      if (isSuccess) {
+        val isError = Commands.cryptoNotifyDeploy.map(_.!).exists(_ != 0)
 
-    telegramService.notify(message("Start Deployment"))
-
-    val isError = Commands.cryptoNotifyDeploy.map(_.!).exists(_ != 0)
-
-    if (isError) {
-      telegramService.notify(message("Deployment is failed"))
-    } else {
-      telegramService.notify(message("Deployment is complete"))
+        if (isError) {
+          telegramService.notify(message("Deployment is failed"))
+        } else {
+          telegramService.notify(message("Deployment is complete"))
+        }
+      } else {
+        telegramService.notify(message("Deployment is failed"))
+      }
     }
   }
 }
