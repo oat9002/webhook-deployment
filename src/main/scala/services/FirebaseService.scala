@@ -13,6 +13,7 @@ import com.google.cloud.firestore.{
 }
 import com.google.firebase.cloud.FirestoreClient
 import com.google.firebase.{FirebaseApp, FirebaseOptions}
+import com.typesafe.scalalogging.LazyLogging
 import common.{Configuration, Constants, Deployment}
 
 import java.io.ByteArrayInputStream
@@ -24,7 +25,8 @@ trait FirebaseService {
 class FirebaseServiceImpl(
     goldPriceTrackingService: GoldPriceTrackingService,
     cryptoNotifyService: CryptoNotifyService
-) extends FirebaseService {
+) extends FirebaseService
+    with LazyLogging {
 
   override def subscribeToDeployment(): IO[Unit] = {
     val firestore: Firestore = Firebase.firestore
@@ -32,6 +34,8 @@ class FirebaseServiceImpl(
 
     IO.pure(
       collectionRef.addSnapshotListener((value, _) => {
+        logger.info("Listening to Firestore changes")
+
         if (value != null && !value.isEmpty) {
           value.getDocumentChanges.forEach { change =>
             if (change.getType == DocumentChange.Type.ADDED) {
@@ -43,29 +47,33 @@ class FirebaseServiceImpl(
               deploymentService.service match {
                 case Constants.ServiceEnum.CryptoNotify
                     if !deploymentService.isSuccess =>
+                  logger.info("Deploying CryptoNotifyService")
                   cryptoNotifyService.deploy().flatMap { isSuccess =>
                     if (isSuccess) {
                       updateDeploymentComplete(doc.getId)
                     } else {
-                      IO.println("Deployment failed")
+                      logger.error("Deployment failed")
+                      IO.unit
                     }
                   }
                 case Constants.ServiceEnum.GoldPriceTracking
                     if !deploymentService.isSuccess =>
+                  logger.info("Deploying GoldPriceTrackingService")
                   goldPriceTrackingService
                     .deploy()
                     .flatMap { isSuccess =>
                       if (isSuccess) {
                         updateDeploymentComplete(doc.getId)
                       } else {
-                        IO.println("Deployment failed")
+                        logger.error("Deployment failed")
+                        IO.unit
                       }
                     }
               }
             }
           }
         } else {
-          println("No documents found in the collection.")
+          logger.info("No documents found in the collection.")
         }
       })
     )

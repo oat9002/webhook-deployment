@@ -14,7 +14,7 @@ object Constants {
       }
     }
 
-    def fromInt(id: Int): ServiceEnum = {
+    def fromLong(id: Long): ServiceEnum = {
       id match {
         case 1 => CryptoNotify
         case 2 => GoldPriceTracking

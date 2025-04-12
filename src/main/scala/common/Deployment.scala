@@ -14,13 +14,13 @@ case class Deployment(
 
 object Deployment {
   def apply(doc: java.util.Map[String, Object]): Deployment = {
-    val serviceId = doc.get(Constants.serviceId).asInstanceOf[Long].toInt
+    val serviceId = doc.get(Constants.serviceId).asInstanceOf[Long]
     val createdAt = doc
       .get(Constants.createdAt)
       .asInstanceOf[Timestamp]
     val isSuccess =
       doc.get(Constants.isSuccess).asInstanceOf[Boolean]
 
-    Deployment(ServiceEnum.fromInt(serviceId), createdAt, isSuccess)
+    Deployment(ServiceEnum.fromLong(serviceId), createdAt, isSuccess)
   }
 }
