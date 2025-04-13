@@ -2,36 +2,33 @@ package services
 
 import cats.effect.IO
 import com.typesafe.scalalogging.LazyLogging
-import common.Commands
+import common.Configuration
 
+import java.io.File
 import scala.sys.process._
 
-trait GoldPriceTrackingService {
+trait GoldPriceTrackingService extends DeploymentService {
   def deploy(): IO[Boolean]
 }
 
-class GoldPriceTrackingServiceImpl(telegramService: TelegramService)
+class GoldPriceTrackingServiceImpl(val telegramService: TelegramService)
     extends GoldPriceTrackingService
     with LazyLogging {
   private val message: String => String =
     telegramService.prefixClassName(classOf[GoldPriceTrackingService])
+  private val goldPriceTrackingDeployCommand: String =
+    s"sh ${Configuration.goldPriceTrackingConfig.folderPath}/deploy.sh"
 
   def deploy(): IO[Boolean] = {
-    telegramService.notify(message("Start Deployment")).flatMap { result =>
-      {
-        if (result) {
-          val isError = Commands.goldPriceTrackingDeploy.map(_.!).exists(_ != 0)
+    deployWithNotifyMessage(
+      message,
+      () => {
+        val workDirectory =
+          new File(Configuration.goldPriceTrackingConfig.folderPath)
 
-          if (isError) {
-            telegramService.notify(message("Deployment is failed"))
-          } else {
-            telegramService.notify(message("Deployment is complete"))
-          }
-        } else {
-          telegramService.notify(message("Deployment is failed"))
-        }
+        Process(goldPriceTrackingDeployCommand, workDirectory).! != 0
       }
-    }
+    )
   }
 }
 

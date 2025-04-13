@@ -2,34 +2,33 @@ package services
 
 import cats.effect.IO
 import com.typesafe.scalalogging.LazyLogging
-import common.Commands
+import common.Configuration
 
-import sys.process._
+import java.io.File
+import scala.sys.process._
 
-trait CryptoNotifyService {
+trait CryptoNotifyService extends DeploymentService {
   def deploy(): IO[Boolean]
 }
 
-class CryptoNotifyServiceImpl(telegramService: TelegramService)
+class CryptoNotifyServiceImpl(val telegramService: TelegramService)
     extends CryptoNotifyService
     with LazyLogging {
   private val message: String => String =
     telegramService.prefixClassName(classOf[CryptoNotifyService])
+  private val cryptoNotifyDeployCommand: String =
+    s"sh ${Configuration.cryptoNotifyConfig.folderPath}/deploy.sh"
 
   override def deploy(): IO[Boolean] = {
-    telegramService.notify(message("Start Deployment")).flatMap { isSuccess =>
-      if (isSuccess) {
-        val isError = Commands.cryptoNotifyDeploy.map(_.!).exists(_ != 0)
+    deployWithNotifyMessage(
+      message,
+      () => {
+        val workDirectory =
+          new File(Configuration.cryptoNotifyConfig.folderPath)
 
-        if (isError) {
-          telegramService.notify(message("Deployment is failed"))
-        } else {
-          telegramService.notify(message("Deployment is complete"))
-        }
-      } else {
-        telegramService.notify(message("Deployment is failed"))
+        Process(cryptoNotifyDeployCommand, workDirectory).! != 0
       }
-    }
+    )
   }
 }
 
