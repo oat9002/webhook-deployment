@@ -17,7 +17,7 @@ class GoldPriceTrackingServiceImpl(val telegramService: TelegramService)
   private val message: String => String =
     telegramService.prefixClassName(classOf[GoldPriceTrackingService])
   private val goldPriceTrackingDeployCommand: String =
-    s"sh ${Configuration.goldPriceTrackingConfig.folderPath}/deploy.sh"
+    s"sh ${Configuration.goldPriceTrackingConfig.folderPath}/server/deploy.sh"
 
   def deploy(): IO[Boolean] = {
     deployWithNotifyMessage(

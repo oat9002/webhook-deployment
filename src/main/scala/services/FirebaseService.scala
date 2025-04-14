@@ -35,31 +35,31 @@ class FirebaseServiceImpl(
 
     collectionRef.addSnapshotListener((value, _) => {
       if (value != null && !value.isEmpty) {
-        value.getDocumentChanges.forEach { change =>
-          if (change.getType == DocumentChange.Type.ADDED) {
-            val doc = change.getDocument
-            val data = doc.getData
-            val deploymentService =
-              Deployment(data)
+        val change = value.getDocumentChanges.getLast
 
-            val isSuccess = deploymentService.service match {
-              case Constants.ServiceEnum.CryptoNotify
-                  if !deploymentService.isSuccess =>
-                cryptoNotifyService.deploy()
+        if (change.getType == DocumentChange.Type.ADDED) {
+          val doc = change.getDocument
+          val data = doc.getData
+          val deploymentService =
+            Deployment(data)
 
-              case Constants.ServiceEnum.GoldPriceTracking
-                  if !deploymentService.isSuccess =>
-                goldPriceTrackingService
-                  .deploy()
-            }
+          val isSuccess = deploymentService.service match {
+            case Constants.ServiceEnum.CryptoNotify
+                if !deploymentService.isSuccess =>
+              cryptoNotifyService.deploy()
 
-            if (isSuccess.unsafeRunSync()) {
-              updateDeploymentComplete(doc.getId).unsafeRunSync()
-            } else {
-              logger.error(
-                s"Failed to deploy ${deploymentService.service} service."
-              )
-            }
+            case Constants.ServiceEnum.GoldPriceTracking
+                if !deploymentService.isSuccess =>
+              goldPriceTrackingService
+                .deploy()
+          }
+
+          if (isSuccess.unsafeRunSync()) {
+            updateDeploymentComplete(doc.getId).unsafeRunSync()
+          } else {
+            logger.error(
+              s"Failed to deploy ${deploymentService.service} service."
+            )
           }
         }
       } else {
