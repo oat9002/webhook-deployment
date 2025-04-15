@@ -24,7 +24,9 @@ class GoldPriceTrackingServiceImpl(val telegramService: TelegramService)
       message,
       () => {
         val workDirectory =
-          new File(Configuration.goldPriceTrackingConfig.folderPath)
+          new File(
+            s"${Configuration.goldPriceTrackingConfig.folderPath}/server"
+          )
 
         Process(goldPriceTrackingDeployCommand, workDirectory).! != 0
       }
