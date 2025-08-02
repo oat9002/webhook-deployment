@@ -1,5 +1,8 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Boot" type="Application" factoryName="Application">
+    <envs>
+      <env name="env" value="development" />
+    </envs>
     <option name="MAIN_CLASS_NAME" value="Boot" />
     <module name="webhook-deployment" />
     <method v="2">

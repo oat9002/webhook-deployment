@@ -1,3 +1,5 @@
+package webhook
+
 import cats.effect._
 import cats.implicits.toSemigroupKOps
 import com.comcast.ip4s.{IpLiteralSyntax, Port}

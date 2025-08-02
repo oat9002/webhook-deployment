@@ -17,9 +17,8 @@ jobs:
         run: |
             git config --global user.name 'oat9002'
             git config --global user.email 'oat9002@hotmail.com'
-      - uses: sbt/setup-sbt@v1
       - name: Release
-        run: sbt "release with-defaults"
+        run: ./gradlew release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -44,7 +43,6 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - uses: sbt/setup-sbt@v1
       - name: Create package
         run: sbt "universal:packageBin"
         env:
