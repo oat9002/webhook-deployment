@@ -12,7 +12,7 @@ group = "oat9002"
 version = "1.30.0-SNAPSHOT"
 
 application {
-    mainClass.set("webhook.Boot")
+    mainClass.set("main.Boot")
 }
 
 dependencies {
@@ -42,4 +42,8 @@ sourceSets {
     test {
         scala.srcDirs("src/test/scala")
     }
+}
+
+tasks.named<ProcessResources>("processResources") {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
