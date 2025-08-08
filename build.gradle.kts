@@ -11,7 +11,7 @@ group = "oat9002"
 version = "1.30.0-SNAPSHOT"
 
 application {
-    mainClass.set("main.Boot")
+    mainClass = "main.Boot"
 }
 
 dependencies {
