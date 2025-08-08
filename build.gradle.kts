@@ -27,12 +27,10 @@ dependencies {
     testImplementation("org.scalatest:scalatest_2.13:3.2.17")
 }
 
-// Scala compile options
- tasks.withType<ScalaCompile> {
+tasks.withType<ScalaCompile> {
     scalaCompileOptions.additionalParameters = listOf("-deprecation", "-feature")
 }
 
-// Source sets
 sourceSets {
     main {
         scala.srcDirs("src/main/scala")
