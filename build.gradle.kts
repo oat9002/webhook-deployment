@@ -11,10 +11,11 @@ group = "oat9002"
 version = "1.30.0-SNAPSHOT"
 
 application {
-    mainClass = "main.Boot"
+    mainClass = "Boot"
 }
 
 dependencies {
+    implementation("org.scala-lang:scala-library:2.13.16")
     implementation("org.http4s:http4s-ember-client_2.13:0.23.29")
     implementation("org.http4s:http4s-ember-server_2.13:0.23.29")
     implementation("org.http4s:http4s-dsl_2.13:0.23.29")
@@ -29,16 +30,6 @@ dependencies {
 
 tasks.withType<ScalaCompile> {
     scalaCompileOptions.additionalParameters = listOf("-deprecation", "-feature")
-}
-
-sourceSets {
-    main {
-        scala.srcDirs("src/main/scala")
-        resources.srcDirs("src/main/resources")
-    }
-    test {
-        scala.srcDirs("src/test/scala")
-    }
 }
 
 tasks.named<ProcessResources>("processResources") {
