@@ -14,8 +14,11 @@ application {
     mainClass = "Boot"
 }
 
+scala {
+    scalaVersion = "2.13.16"
+}
+
 dependencies {
-    implementation("org.scala-lang:scala-library:2.13.16")
     implementation("org.http4s:http4s-ember-client_2.13:0.23.29")
     implementation("org.http4s:http4s-ember-server_2.13:0.23.29")
     implementation("org.http4s:http4s-dsl_2.13:0.23.29")
@@ -23,8 +26,8 @@ dependencies {
     implementation("io.circe:circe-generic_2.13:0.14.9")
     implementation("com.typesafe:config:1.4.3")
     implementation("com.typesafe.scala-logging:scala-logging_2.13:3.9.4")
-    implementation("ch.qos.logback:logback-classic:1.5.12")
-    implementation("com.google.firebase:firebase-admin:9.4.3")
+    implementation("ch.qos.logback:logback-classic:1.5.13")
+    implementation("com.google.firebase:firebase-admin:9.5.0")
     testImplementation("org.scalatest:scalatest_2.13:3.2.17")
 }
 
