@@ -10,7 +10,6 @@ repositories {
 }
 
 group = "oat9002"
-version = "1.30.0-SNAPSHOT"
 
 application {
     mainClass = "Boot"
