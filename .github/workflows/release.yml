@@ -43,15 +43,13 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
       - name: Create package
-        run: sbt "universal:packageBin"
-        env:
-          WEBHOOK_DEPLOYMENT_API_KEY: ${{ secrets.WEBHOOK_DEPLOYMENT_API_KEY }}
-          WEBHOOK_DEPLOYMENT_TELEGRAM_BOT_TOKEN: ${{ secrets.WEBHOOK_DEPLOYMENT_TELEGRAM_BOT_TOKEN }}
-          WEBHOOK_DEPLOYMENT_TELEGRAM_CHAT_ID: ${{ secrets.WEBHOOK_DEPLOYMENT_TELEGRAM_CHAT_ID }}
+        run: ./gradlew distZip
       - name: Publish GitHub Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "target/universal/*.zip"
+          artifacts: "build/distributions/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.get-latest-tag.outputs.LATEST_TAG }}
