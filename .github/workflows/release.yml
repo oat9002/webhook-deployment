@@ -21,7 +21,7 @@ jobs:
         id: prep-release
         run: |
           VERSION_LINE=$(grep '^version=' gradle.properties)
-          VERSION=$(echo "$VERSION_LINE" | sed 's/version="\(.*\)"/\1/')
+          VERSION=$(echo "$VERSION_LINE" | sed 's/version=//')
           RELEASE_VERSION=$(echo "$VERSION" | sed 's/-SNAPSHOT//')
           echo "Release version: $RELEASE_VERSION"
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_OUTPUT
@@ -32,7 +32,7 @@ jobs:
           echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_OUTPUT
       - name: Set gradle.properties to Release Version
         run: |
-          sed -i 's/version=".*"/version="${{ steps.prep-release.outputs.RELEASE_VERSION }}"/' gradle.properties
+          sed -i 's/version=.*/version=${{ steps.prep-release.outputs.RELEASE_VERSION }}/' gradle.properties
       - name: Commit Release Version
         run: |
           git add gradle.properties
@@ -44,7 +44,7 @@ jobs:
           git push origin v${{ steps.prep-release.outputs.RELEASE_VERSION }}
       - name: Bump Version in gradle.properties
         run: |
-          sed -i 's/version=".*"/version="${{ steps.prep-release.outputs.NEXT_VERSION }}"/' gradle.properties
+          sed -i 's/version=.*/version=${{ steps.prep-release.outputs.NEXT_VERSION }}/' gradle.properties
       - name: Commit and Push Version Bump
         run: |
           git add gradle.properties
