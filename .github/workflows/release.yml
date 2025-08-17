@@ -41,6 +41,7 @@ jobs:
         run: |
           git tag v${{ steps.prep-release.outputs.RELEASE_VERSION }}
           git push
+          git push origin v${{ steps.prep-release.outputs.RELEASE_VERSION }}
       - name: Bump Version in gradle.properties
         run: |
           sed -i 's/version=".*"/version="${{ steps.prep-release.outputs.NEXT_VERSION }}"/' gradle.properties
