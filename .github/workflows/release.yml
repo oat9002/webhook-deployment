@@ -21,6 +21,31 @@ jobs:
         run: ./gradlew release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Prepare Release Version and Tag
+        id: prep-release
+        run: |
+          VERSION_LINE=$(grep '^version=' gradle.properties)
+          VERSION=$(echo "$VERSION_LINE" | sed 's/version="\(.*\)"/\1/')
+          RELEASE_VERSION=$(echo "$VERSION" | sed 's/-SNAPSHOT//')
+          echo "Release version: $RELEASE_VERSION"
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+          MINOR=$(echo "$RELEASE_VERSION" | awk -F. '{print $2}')
+          NEXT_MINOR=$((MINOR + 1))
+          NEXT_VERSION=$(echo "$RELEASE_VERSION" | awk -F. -v next_minor=$NEXT_MINOR '{print $1 "." next_minor ".0-SNAPSHOT"}')
+          echo "Next version: $NEXT_VERSION"
+          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_OUTPUT
+      - name: Create Git Tag
+        run: |
+          git tag ${{ steps.prep-release.outputs.RELEASE_VERSION }}
+          git push origin ${{ steps.prep-release.outputs.RELEASE_VERSION }}
+      - name: Bump Version in gradle.properties
+        run: |
+          sed -i 's/version=".*"/version="${{ steps.prep-release.outputs.NEXT_VERSION }}"/' gradle.properties
+      - name: Commit and Push Version Bump
+        run: |
+          git add gradle.properties
+          git commit -m "Bump version to ${{ steps.prep-release.outputs.NEXT_VERSION }} [skip ci]"
+          git push
 
   githubRelease:
     needs: release

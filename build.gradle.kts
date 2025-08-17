@@ -1,8 +1,8 @@
+import groovy.lang.Closure
+
 plugins {
     scala
     application
-
-    id("net.researchgate.release") version "3.1.0"
 }
 
 repositories {
@@ -38,16 +38,6 @@ tasks.withType<ScalaCompile> {
 
 tasks.named<ProcessResources>("processResources") {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-
-release {
-    failOnCommitNeeded.set(true)
-    failOnSnapshotDependencies.set(true)
-    failOnUnversionedFiles.set(true)
-    revertOnFail.set(true)
-
-    tagTemplate.set("v$version")
-    snapshotSuffix.set("-SNAPSHOT")
 }
 
 
