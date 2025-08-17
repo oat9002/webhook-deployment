@@ -17,10 +17,6 @@ jobs:
         run: |
             git config --global user.name 'oat9002'
             git config --global user.email 'oat9002@hotmail.com'
-      - name: Release
-        run: ./gradlew release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Prepare Release Version and Tag
         id: prep-release
         run: |
