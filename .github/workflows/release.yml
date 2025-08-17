@@ -30,10 +30,17 @@ jobs:
           NEXT_VERSION=$(echo "$RELEASE_VERSION" | awk -F. -v next_minor=$NEXT_MINOR '{print $1 "." next_minor ".0-SNAPSHOT"}')
           echo "Next version: $NEXT_VERSION"
           echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_OUTPUT
+      - name: Set gradle.properties to Release Version
+        run: |
+          sed -i 's/version=".*"/version="${{ steps.prep-release.outputs.RELEASE_VERSION }}"/' gradle.properties
+      - name: Commit Release Version
+        run: |
+          git add gradle.properties
+          git commit -m "Release version ${{ steps.prep-release.outputs.RELEASE_VERSION }}"
       - name: Create Git Tag
         run: |
-          git tag ${{ steps.prep-release.outputs.RELEASE_VERSION }}
-          git push origin ${{ steps.prep-release.outputs.RELEASE_VERSION }}
+          git tag v${{ steps.prep-release.outputs.RELEASE_VERSION }}
+          git push
       - name: Bump Version in gradle.properties
         run: |
           sed -i 's/version=".*"/version="${{ steps.prep-release.outputs.NEXT_VERSION }}"/' gradle.properties
@@ -53,10 +60,11 @@ jobs:
           git config --global user.name 'oat9002'
           git config --global user.email 'oat9002@hotmail.com'
       - name: Get latest tag
+        id: get-latest-tag
         run: |
           git pull
-          echo ::set-output name=LATEST_TAG::$(git describe --tags --abbrev=0)
-        id: get-latest-tag
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
       - name: Checkout to latest tag
         run: git checkout tags/${{ steps.get-latest-tag.outputs.LATEST_TAG }}
       - name: Set up JDK 21
